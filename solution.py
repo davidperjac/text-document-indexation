@@ -1,38 +1,35 @@
 class TrieNode:
     def __init__(self, char):
         self.char = char            # guardamos el caracter en el nodo
+        self.is_end = False         # ponemos que no es el final de la palabra
+        self.children = {}          # tenemos un diccionario de nodos hijos donde las claves son caracteres y los valores son nodos
+        self.ubicacion = {}         # tenemos un diccionario de ubicaciones donde las claves son archivos y los valores son las lineas
 
-        self.is_end = False         # preguntamos si es el final de la palabra
-
-        self.counter = 0            # un contador que indica cuántas veces se inserta una palabra
-                                    # (si el final de este nodo es Verdadero)
-
-        self.children = {}          # un diccionario de nodos hijos
-                                    # las claves son caracteres, los valores son nodos
-
+        
+        
+        
 class Trie(object):
 
     def __init__(self):
-        self.root = TrieNode("")    # El trie tiene al menos el nodo raíz que no almacena ningún carácter.
+        self.root = TrieNode("")                    # El trie tiene al menos el nodo raíz que no almacena ningún carácter
 
-    def insert(self, word):
+    def insert(self, word, archivo, linea):
+        node = self.root                            # Inserta una palabra en el trie
 
-        node = self.root            # Inserta una palabra en el trie
-
-        # Recorre cada carácter de la palabra
-        # Comprueba si hay algun hijo que contenga el carácter, y crea un nuevo hijo para el nodo actual
-        for char in word:
+        for char in word:                           # Recorremos cada carácter de la palabra y comprueba si algun hijo contiene el carácter
             if char in node.children:
                 node = node.children[char]
-            else:
-                # Si no se encuentra el caracter en los hijos, se crea un nuevo TrieNode
+            else:                                   # Si no se encuentra el caracter en los hijos, se crea un nuevo TrieNode
                 new_node = TrieNode(char)
                 node.children[char] = new_node
                 node = new_node
 
-        node.is_end = True          # Marca el final de una palabra
+        node.is_end = True                          # Marcamos el final de una palabra
 
-        node.counter += 1           # Incrementar el contador para indicar que vemos esta palabra una vez más
+        if archivo not in node.ubicacion:           # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
+            node.ubicacion[archivo] = [linea]
+        else:
+            node.ubicacion[archivo].append(linea)
 
     def dfs(self, node, prefix):
         """Depth-first traversal of the trie
@@ -42,8 +39,8 @@ class Trie(object):
             - prefix: the current prefix, for tracing a
                 word while traversing the trie
         """
-        if node.is_end:
-            self.output.append((prefix + node.char, node.counter))
+        if node.is_end:                             #retornamos el diccionario con las ubicaciones
+            self.output.append((node.ubicacion))
 
         for child in node.children.values():
             self.dfs(child, prefix + node.char)
@@ -53,6 +50,7 @@ class Trie(object):
         the trie with that prefix, sort the words by the number of
         times they have been inserted
         """
+
         # Use a variable within the class to keep all possible outputs
         # As there can be more than one word with such prefix
         self.output = []
@@ -69,29 +67,23 @@ class Trie(object):
         # Traverse the trie to get all candidates
         self.dfs(node, x[:-1])
 
-        # Sort the results in reverse order and return
-        return sorted(self.output, key=lambda x: x[1], reverse=True)
+        return self.output                      #retornamos la salida
 
+    
+    
 
-# t = Trie()
-# t.insert("was")
-# t.insert("word")
-# t.insert("war")
-# t.insert("what")
-# t.insert("where")
-# print(t.query("wh"))
-# print(len(t.query("wh"))>0)
+nombArchivos = ["test01.txt","test02.txt","test03.txt"]
+t = Trie()                                              #un trie para todos los archivos
 
+# creacion del trie
+for nombArchivo in nombArchivos:
+    archivo = open("archivos/"+nombArchivo,"r", encoding="utf8")
 
-ubicaciones=[]
-word = "wh"
-archivo = open("archivo.txt","r")
-for i,linea in enumerate(archivo):
-    t = Trie()
-    linea=linea.strip().split(" ")
-    for palabra in linea:
-        t.insert(palabra)
-    if len(t.query(word))>0:
-        ubicaciones.append(i)
+    for i,linea in enumerate(archivo):
+        linea = linea.strip().split(" ")
+        for palabra in linea:
+            t.insert(palabra,nombArchivo,i)
+    archivo.close()
 
-print(ubicaciones)
+print(t.query("continentes"))
+print(t.query("colores"))
