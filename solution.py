@@ -40,7 +40,7 @@ class Trie(object):
                 word while traversing the trie
         """
         if node.is_end:                             #retornamos el diccionario con las ubicaciones
-            self.output.append((node.ubicacion))
+            self.output.append((node.ubicacion, prefix + node.char))
 
         for child in node.children.values():
             self.dfs(child, prefix + node.char)
