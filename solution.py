@@ -2,15 +2,12 @@
 # https://stackoverflow.com/questions/30910508/searching-a-string-inside-a-char-array-using-divide-and-conquer
 
 
-
 class TrieNode:
     def __init__(self, char):
         self.char = char            # guardamos el caracter en el nodo
         self.is_end = False         # ponemos que no es el final de la palabra
         self.children = {}          # tenemos un diccionario de nodos hijos donde las claves son caracteres y los valores son nodos
         self.ubicacion = {}         # tenemos un diccionario de ubicaciones donde las claves son archivos y los valores son las lineas
-
-
 
 
 class Trie(object):
@@ -20,7 +17,7 @@ class Trie(object):
 
     def insert(self, word, archivo, linea):
         node = self.root                            # Inserta una palabra en el trie
-
+        
         for char in word:                           # Recorremos cada carácter de la palabra y comprueba si algun hijo contiene el carácter
             if char in node.children:
                 node = node.children[char]
@@ -36,105 +33,34 @@ class Trie(object):
         else:
             node.ubicacion[archivo].append(linea)
 
-    def dfs(self, node, prefix):                    #Depth-first traversal of the trie
+        sorted(self.root.children.items(), key=lambda x: x[1].char, reverse=True)
 
-        if node.is_end:                             #retornamos el diccionario con las ubicaciones
-
-            # print("\n\nANTES DE AGREGAR                 ",self.output)
-            # print("LO QUE TENGO QUE AGREGAR         ",node.ubicacion)
-
-            for c,v in node.ubicacion.items():
-                if c in self.output:
-                    self.output[c]+=v
-                else:
-                    self.output[c]=v
-
-            # print("YA AGREGADO                      ", self.output)
-
-        for child in node.children.values():
-            self.dfs(child, prefix + node.char)
-
-
-
-
-    # Dada una entrada (un prefijo), recuperar todas las palabras almacenadas en el trie con ese prefijo
-    def query(self, x):
-        # Use a variable within the class to keep all possible outputs as there can be more than one word with such prefix
+    def divideYconquistaOutput(self, trie, objetivo, l, r):        
         self.output = {}
-        node = self.root
-
-        for char in x:                              # Check if the prefix is in the trie
-            if char in node.children:
-                node = node.children[char]
-            else:
-                return {}                           # cannot found the prefix, return empty list
-
-        self.dfs(node, x[:-1])                      # Traverse the trie to get all candidates
-
-        return self.output                          #retornamos la salida
-
-
-
-
-
-
-
-
-
-
-
-    def  divideYconquista(self, objetivo, l, r):                    # l==0 && r==NMAX-1
-
+        self.divideYconquista(trie, objetivo, l, r)
+        return self.output
+        
+    def divideYconquista(self, trie, objetivo, l, r):
         if l>r:                                         # return si l es mayor que r
             return -1
-
+    
         m = (l+r)//2
-        print("aaaaaa ",m)
-
-
-
-
-
-        hijos = list(self.root.children.keys())
-
-
-
-
-        # print(self.root.children.get("c"))
-        # print(self.root.children.get("c").children.get("o"))
-
-
-
-
-
-
-        print(hijos[l:m-1])
-        # print(hijos[m+1:r])
-        # print(objetivo)
-
-        input()
-
-        left = self.divideYconquista(objetivo, l, m - 1)  # replaced return
-
-        # right = self.divideYconquista(objetivo, m+1, r)   #by saving values returned
-
-        # if self==0:
-        #     return m+1
-        # elif l==r:                                      # returned -1 as the value has not matched and further recursion is of no use
-        #     return -1
-        # else:
-        #     left = self.divideYconquista(self,l,m-1)    #replaced return
-        #     right = self.divideYconquista(self,m+1,r)   #by saving values returned
-        #     if left!=-1:                                #so that i can check them,
-        #         return left                             #otherwise returning from here onlywould never allow second satatement to execute
-        #     if right!=-1:
-        #         return right
-        #     else:
-        #         return -1
-
-        return 0
-
-
+        
+        ultimoCaracter = objetivo[-1]
+        if ultimoCaracter in trie and len(objetivo)==1:            
+            self.output.update(trie[ultimoCaracter].ubicacion)
+            return self.output
+                        
+        derecha = dict(list(trie.items())[l:m+1])         
+        izquierda = dict(list(trie.items())[m-1:r])         
+        
+        if objetivo[0] in derecha:
+            left = self.divideYconquista(derecha[objetivo[0]].children,objetivo[1:],l,len(derecha[objetivo[0]].children.keys()))            
+        elif objetivo[0] in izquierda:
+            right = self.divideYconquista(izquierda[objetivo[0]].children,objetivo[1:],m,r)
+        else:
+            return {}
+        
 nombArchivos = ["test01.txt","test02.txt","test03.txt"]
 t = Trie()                                          #un trie para todos los archivos
 
@@ -148,4 +74,4 @@ for nombArchivo in nombArchivos:
     archivo.close()
 
 # busqueda
-print(t.query("continente"))
+print(t.divideYconquistaOutput(t.root.children,"continente",0,len(t.root.children.keys())))
