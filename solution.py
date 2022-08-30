@@ -2,12 +2,13 @@
 # https://stackoverflow.com/questions/30910508/searching-a-string-inside-a-char-array-using-divide-and-conquer
 
 
+#CLASSES
 class TrieNode:
     def __init__(self, char):
         self.char = char            # guardamos el caracter en el nodo
         self.is_end = False         # ponemos que no es el final de la palabra
         self.children = {}          # tenemos un diccionario de nodos hijos donde las claves son caracteres y los valores son nodos
-        self.ubicacion = {}         # tenemos un diccionario de ubicaciones donde las claves son archivos y los valores son las lineas
+        self.ubication = {}         # tenemos un diccionario de ubicaciones donde las claves son archivos y los valores son las lineas
 
 
 class Trie(object):
@@ -15,7 +16,7 @@ class Trie(object):
     def __init__(self):
         self.root = TrieNode("")                    # El trie tiene al menos el nodo raíz que no almacena ningún carácter
 
-    def insert(self, word, archivo, linea):
+    def insert(self, word, file, line):
         node = self.root                            # Inserta una palabra en el trie
         
         for char in word:                           # Recorremos cada carácter de la palabra y comprueba si algun hijo contiene el carácter
@@ -28,50 +29,55 @@ class Trie(object):
 
         node.is_end = True                          # Marcamos el final de una palabra
 
-        if archivo not in node.ubicacion:           # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
-            node.ubicacion[archivo] = [linea]
+        if file not in node.ubication:           # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
+            node.ubication[file] = [line]
         else:
-            node.ubicacion[archivo].append(linea)
+            node.ubication[file].append(line)
 
         sorted(self.root.children.items(), key=lambda x: x[1].char, reverse=True)
 
-    def divideYconquistaOutput(self, trie, objetivo, l, r):        
+    def search(self, trie, target, l, r):        
         self.output = {}
-        self.divideYconquista(trie, objetivo, l, r)
+        self.searchAux(trie, target, l, r)
         return self.output
         
-    def divideYconquista(self, trie, objetivo, l, r):
+    def searchAux(self, trie, target, l, r):
         if l>r:                                         # return si l es mayor que r
             return -1
     
         m = (l+r)//2
         
-        ultimoCaracter = objetivo[-1]
-        if ultimoCaracter in trie and len(objetivo)==1:            
-            self.output.update(trie[ultimoCaracter].ubicacion)
-            return self.output
-                        
-        derecha = dict(list(trie.items())[l:m+1])         
-        izquierda = dict(list(trie.items())[m-1:r])         
+        #TODO: AGREGAR BUSQUEDA POR PATRONES AND / OR
         
-        if objetivo[0] in derecha:
-            left = self.divideYconquista(derecha[objetivo[0]].children,objetivo[1:],l,len(derecha[objetivo[0]].children.keys()))            
-        elif objetivo[0] in izquierda:
-            right = self.divideYconquista(izquierda[objetivo[0]].children,objetivo[1:],m,r)
+        lastChar = target[-1]
+        if lastChar in trie and len(target)==1:            
+            self.output.update(trie[lastChar].ubication)
+            return self.output
+
+        left = dict(list(trie.items())[m-1:r])         
+        right = dict(list(trie.items())[l:m+1])         
+        
+        if target[0] in right:
+            left = self.searchAux(right[target[0]].children,target[1:],l,len(right[target[0]].children.keys()))            
+        elif target[0] in left:
+            right = self.searchAux(left[target[0]].children,target[1:],m,r)
         else:
             return {}
-        
-nombArchivos = ["test01.txt","test02.txt","test03.txt"]
-t = Trie()                                          #un trie para todos los archivos
 
-# creacion del trie
-for nombArchivo in nombArchivos:
-    archivo = open("archivos/"+nombArchivo,"r", encoding="utf8")
-    for i,linea in enumerate(archivo):
-        linea = linea.strip().split(" ")
-        for palabra in linea:
-            t.insert(palabra,nombArchivo,i+1)
-    archivo.close()
 
-# busqueda
-print(t.divideYconquistaOutput(t.root.children,"continente",0,len(t.root.children.keys())))
+#TESTS
+
+#TRIE PREPARATION
+fileNames = ["test01.txt","test02.txt","test03.txt"]
+trie = Trie()                                         
+
+for fileName in fileNames:
+    file = open("archivos/"+fileName,"r", encoding="utf8")
+    for i,line in enumerate(file):
+        line = line.strip().split(" ")
+        for word in line:
+            trie.insert(word,fileName,i+1)
+    file.close()
+
+#SEARCH
+print(trie.search(trie.root.children,"continente",0,len(trie.root.children.keys())))
