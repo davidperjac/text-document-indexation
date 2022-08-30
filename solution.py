@@ -30,11 +30,9 @@ class Trie(object):
         node.is_end = True                          # Marcamos el final de una palabra
 
         if file not in node.ubication:           # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
-            node.ubication[file] = [line]
+            node.ubication[file] = set([line])
         else:
-            node.ubication[file].append(line)
-
-        sorted(self.root.children.items(), key=lambda x: x[1].char, reverse=True)
+            node.ubication[file].add(line)
 
     def search(self, trie, target, l, r):        
         self.output = {}
@@ -79,5 +77,27 @@ for fileName in fileNames:
             trie.insert(word,fileName,i+1)
     file.close()
 
+#TESTS
+print(trie.search(trie.root.children,"continentes",0,len(trie.root.children.keys())))
+print(trie.search(trie.root.children,"colores",0,len(trie.root.children.keys())))
+print(trie.search(trie.root.children,"la",0,len(trie.root.children.keys())))
+print("")
+
 #SEARCH
-print(trie.search(trie.root.children,"continente",0,len(trie.root.children.keys())))
+search = "colores or continentes or la"
+if "and" in search:
+    pass
+elif "or" in search:
+    search = search.split(" or ")
+    union={}
+    for word in search:
+        dictionary = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
+        for c,v in dictionary.items():
+            if c not in union:
+                union[c]=set(v)
+            else:
+                union[c]|=v        
+    print(union)
+else:
+    dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
+    print(dictionary)
