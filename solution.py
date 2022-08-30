@@ -29,7 +29,7 @@ class Trie(object):
 
         node.is_end = True                          # Marcamos el final de una palabra
 
-        if file not in node.ubication:           # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
+        if file not in node.ubication:              # Agregamos la linea en la que se encuentra la palabra porque ya es el ultimo caracter
             node.ubication[file] = set([line])
         else:
             node.ubication[file].add(line)
@@ -40,7 +40,7 @@ class Trie(object):
         return self.output
         
     def searchAux(self, trie, target, l, r):
-        if l>r:                                         # return si l es mayor que r
+        if l>r:                                     # return si l es mayor que r
             return -1
     
         m = (l+r)//2
@@ -77,16 +77,27 @@ for fileName in fileNames:
             trie.insert(word,fileName,i+1)
     file.close()
 
-#TESTS
+#SEARCH TESTS
+print("SEARCH TESTS")
 print(trie.search(trie.root.children,"continentes",0,len(trie.root.children.keys())))
 print(trie.search(trie.root.children,"colores",0,len(trie.root.children.keys())))
 print(trie.search(trie.root.children,"la",0,len(trie.root.children.keys())))
 print("")
 
 #SEARCH
-search = "colores or continentes or la"
+search = "colores and continentes and la"
+# search = "colores or continentes or la"
 if "and" in search:
-    pass
+    search = search.split(" and ")
+    interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))
+    for word in search[1:]:
+        new = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
+        equalFiles = set(interception.keys())&set(new.keys())
+        newInterception = {}
+        for archivo in equalFiles:
+            newInterception[archivo]=interception[archivo]|new[archivo]
+        interception=newInterception
+    print("INTERCEPTION OF FILES: ",interception)
 elif "or" in search:
     search = search.split(" or ")
     union={}
@@ -97,7 +108,7 @@ elif "or" in search:
                 union[c]=set(v)
             else:
                 union[c]|=v        
-    print(union)
+    print("UNION OF FILES: ",union)
 else:
     dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
     print(dictionary)
