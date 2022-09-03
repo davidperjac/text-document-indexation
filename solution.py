@@ -50,11 +50,11 @@ class Trie(object):
             self.output.update(trie[lastChar].ubication)
             return self.output
 
-        left = dict(list(trie.items())[m-1:r])         
-        right = dict(list(trie.items())[l:m+1])         
-        
+        left = dict(list(trie.items())[m:r])         
+        right = dict(list(trie.items())[l:m])
+      
         if target[0] in right:
-            left = self.searchAux(right[target[0]].children,target[1:],l,len(right[target[0]].children.keys()))            
+            left = self.searchAux(right[target[0]].children,target[1:],l,m)            
         elif target[0] in left:
             right = self.searchAux(left[target[0]].children,target[1:],m,r)
         else:
