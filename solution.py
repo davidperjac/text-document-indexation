@@ -63,17 +63,26 @@ class Trie(object):
 def searchPattern(search, trie) : 
     if "and" in search:
         search = search.split(" and ")
-        resultado = {}
         interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))
+        resultado = {}
+        resultado[search[0]]=interception    
         for word in search[1:]:
             new = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
             equalFiles = set(interception.keys())&set(new.keys())
             newInterception = {}
-            for archivo in equalFiles:
-                newInterception[archivo]=interception[archivo]| new[archivo]
+            for archivo in equalFiles:            
+                newInterception[archivo]=interception[archivo]|new[archivo]
+                resultado[word]=new
             interception=newInterception
-            resultado[word] = interception
-        print("INTERCEPTION OF FILES: ",resultado)
+        final = {}
+        for palabra,dicArchivoLinea in resultado.items():
+            for archivo,linea in dicArchivoLinea.items():
+                if archivo in interception:              
+                    if palabra not in final:
+                        final[palabra]={archivo:linea}
+                    else:
+                        final[palabra][archivo]=linea    
+        print("INTERCEPTION OF FILES: ",final)
     elif "or" in search:
         search = search.split(" or ")
         resultado = {}
