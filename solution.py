@@ -1,6 +1,5 @@
-# albertauyeung.github.io/2020/06/15/python-trie.html/
-# https://stackoverflow.com/questions/30910508/searching-a-string-inside-a-char-array-using-divide-and-conquer
-
+#IMPORTS
+import time
 
 #CLASSES
 class TrieNode:
@@ -9,7 +8,6 @@ class TrieNode:
         self.is_end = False         # ponemos que no es el final de la palabra
         self.children = {}          # tenemos un diccionario de nodos hijos donde las claves son caracteres y los valores son nodos
         self.ubication = {}         # tenemos un diccionario de ubicaciones donde las claves son archivos y los valores son las lineas
-
 
 class Trie(object):
 
@@ -52,7 +50,7 @@ class Trie(object):
 
         left = dict(list(trie.items())[m:r])         
         right = dict(list(trie.items())[l:m])
-      
+
         if target[0] in right:
             left = self.searchAux(right[target[0]].children,target[1:],l,m)            
         elif target[0] in left:
@@ -60,53 +58,60 @@ class Trie(object):
         else:
             return {}
 
+#FUNCTIONS
 
-#TESTS
+def searchPattern(search, trie) : 
+    if "and" in search:
+        search = search.split(" and ")
+        interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))
+        for word in search[1:]:
+            new = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
+            equalFiles = set(interception.keys())&set(new.keys())
+            newInterception = {}
+            for archivo in equalFiles:
+                newInterception[archivo]=interception[archivo]|new[archivo]
+            interception=newInterception
+        print("INTERCEPTION OF FILES: ",interception)
+    elif "or" in search:
+        search = search.split(" or ")
+        union={}
+        for word in search:
+            dictionary = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
+            for file,lines in dictionary.items():
+                if file not in union:
+                    union[file]=set(lines)
+                else:
+                    union[file]|=lines
+        print("UNION OF FILES: ",union)
+    else:
+        dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
+        print(dictionary)
 
-#TRIE PREPARATION
+def filesPrep(trie,fileNames) :
+    for fileName in fileNames:
+        file = open("archivos/"+fileName,"r", encoding="utf8")
+        for i,line in enumerate(file):
+            line = line.strip().split(" ")
+            for word in line:
+                trie.insert(word,fileName,i+1)
+        file.close()
+
+
+#CONSTANTS
+
 fileNames = ["test01.txt","test02.txt","test03.txt"]
+search = "colores and continentes"
+start_time = time.time()
 trie = Trie()                                         
 
-for fileName in fileNames:
-    file = open("archivos/"+fileName,"r", encoding="utf8")
-    for i,line in enumerate(file):
-        line = line.strip().split(" ")
-        for word in line:
-            trie.insert(word,fileName,i+1)
-    file.close()
+#SEARCH PATTERN TESTS
+filesPrep(trie,fileNames)
+searchPattern(search,trie)
 
-#SEARCH TESTS
-print("SEARCH TESTS")
-print(trie.search(trie.root.children,"continentes",0,len(trie.root.children.keys())))
-print(trie.search(trie.root.children,"colores",0,len(trie.root.children.keys())))
-print(trie.search(trie.root.children,"la",0,len(trie.root.children.keys())))
-print("")
+print("--- %s seconds ---" % (time.time() - start_time))
 
-#SEARCH
-search = "colores and continentes and la"
-# search = "colores or continentes or la"
-if "and" in search:
-    search = search.split(" and ")
-    interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))
-    for word in search[1:]:
-        new = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
-        equalFiles = set(interception.keys())&set(new.keys())
-        newInterception = {}
-        for archivo in equalFiles:
-            newInterception[archivo]=interception[archivo]|new[archivo]
-        interception=newInterception
-    print("INTERCEPTION OF FILES: ",interception)
-elif "or" in search:
-    search = search.split(" or ")
-    union={}
-    for word in search:
-        dictionary = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
-        for c,v in dictionary.items():
-            if c not in union:
-                union[c]=set(v)
-            else:
-                union[c]|=v        
-    print("UNION OF FILES: ",union)
-else:
-    dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
-    print(dictionary)
+#  
+
+{ "colores" : {"test01.txt" : {1,3} } }
+
+{ "test01.txt" : { "colores" : {1,3 } } }
