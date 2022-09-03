@@ -33,7 +33,7 @@ class Trie(object):
             node.ubication[file].add(line)
 
     def search(self, trie, target, l, r):        
-        self.output = {}
+        self.output = {target:""}
         self.searchAux(trie, target, l, r)
         return self.output
         
@@ -44,13 +44,14 @@ class Trie(object):
         m = (l+r)//2
                 
         lastChar = target[-1]
-        if lastChar in trie and len(target)==1:            
-            self.output.update(trie[lastChar].ubication)
+        if lastChar in trie and len(target)==1:         
+            target = list(self.output.keys())[0]
+            self.output[target]=trie[lastChar].ubication
             return self.output
 
         left = dict(list(trie.items())[m:r])         
         right = dict(list(trie.items())[l:m])
-
+      
         if target[0] in right:
             left = self.searchAux(right[target[0]].children,target[1:],l,m)            
         elif target[0] in left:
@@ -63,32 +64,27 @@ class Trie(object):
 def searchPattern(search, trie) : 
     if "and" in search:
         search = search.split(" and ")
-        interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))
-        resultado = {}
-        resultado[search[0]]=interception    
+        words = [search[0]]
+        interception = trie.search(trie.root.children,search[0],0,len(trie.root.children.keys()))    
         for word in search[1:]:
             new = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
-            equalFiles = set(interception.keys())&set(new.keys())
-            newInterception = {}
-            for archivo in equalFiles:            
-                newInterception[archivo]=interception[archivo]|new[archivo]
-                resultado[word]=new
-            interception=newInterception
-        final = {}
-        for palabra,dicArchivoLinea in resultado.items():
-            for archivo,linea in dicArchivoLinea.items():
-                if archivo in interception:              
-                    if palabra not in final:
-                        final[palabra]={archivo:linea}
-                    else:
-                        final[palabra][archivo]=linea    
-        print("INTERCEPTION OF FILES: ",final)
+            words.append(word)
+            equalFiles = set(interception[list(interception.keys())[0]].keys() & new[list(new.keys())[0]].keys())
+            noEqualFiles = set(interception[list(interception.keys())[0]].keys() - new[list(new.keys())[0]].keys())
+            newInterception = interception
+            newInterception.update(new)        
+            for key in newInterception.keys():
+                for noEqual in noEqualFiles:
+                    if noEqual in newInterception[key]:
+                        del newInterception[key][noEqual]
+            interception=newInterception  
+        print("INTERCEPTION OF FILES: ",interception)
     elif "or" in search:
         search = search.split(" or ")
-        resultado = {}
+        resultado={}
         for word in search:
             dictionary = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
-            resultado[word] = dictionary
+            resultado.update(dictionary)
         print("UNION OF FILES: ",resultado)
     else:
         dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
@@ -107,7 +103,9 @@ def filesPrep(trie,fileNames) :
 #CONSTANTS
 
 fileNames = ["test01.txt","test02.txt","test03.txt"]
-search = "colores and continentes"
+search = input("Ingrese el patron a buscar(and/or):")
+# search = "colores and continentes and la"
+# search = "colores or continentes or la"
 start_time = time.time()
 trie = Trie()                                         
 
@@ -116,9 +114,3 @@ filesPrep(trie,fileNames)
 searchPattern(search,trie)
 
 print("--- %s seconds ---" % (time.time() - start_time))
-
-#  
-
-{ "colores" : {"test01.txt" : {1,3} } }
-
-{ "test01.txt" : { "colores" : {1,3 } } }
