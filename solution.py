@@ -40,13 +40,11 @@ class Trie(object):
         return self.output
         
     def searchAux(self, trie, target, l, r):
-        if l>r:                                     # return si l es mayor que r
+        if l>r:
             return -1
     
         m = (l+r)//2
-        
-        #TODO: AGREGAR BUSQUEDA POR PATRONES AND / OR
-        
+                
         lastChar = target[-1]
         if lastChar in trie and len(target)==1:            
             self.output.update(trie[lastChar].ubication)
