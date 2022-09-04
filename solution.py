@@ -81,11 +81,11 @@ def searchPattern(search, trie) :
         print("INTERCEPTION OF FILES: ",interception)
     elif "or" in search:
         search = search.split(" or ")
-        resultado={}
+        union={}
         for word in search:
             dictionary = trie.search(trie.root.children,word,0,len(trie.root.children.keys()))
-            resultado.update(dictionary)
-        print("UNION OF FILES: ",resultado)
+            union.update(dictionary)
+        print("UNION OF FILES: ",union)
     else:
         dictionary = trie.search(trie.root.children,search,0,len(trie.root.children.keys()))
         print(dictionary)
